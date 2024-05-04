@@ -19,7 +19,7 @@ struct Particle {
 
 struct Spring {
     float k, rest_length;
-    Particle a, b;
+    Particle *a, *b;
 };
 
 Particle new_particle(float x, float y) {
@@ -31,7 +31,7 @@ Particle new_particle(float x, float y) {
     };
 }
 
-Spring new_spring(float k, float rest_length, Particle a, Particle b) {
+Spring new_spring(float k, float rest_length, Particle* a, Particle* b) {
     return Spring { k, rest_length, a, b };
 }
 
@@ -40,7 +40,7 @@ void render_particle(Particle* self) {
 }
 
 void render_spring(Spring* self) {
-    DrawLine(self->a.pos.x, self->a.pos.y, self->b.pos.x, self->b.pos.y, WHITE);
+    DrawLine(self->a->pos.x, self->a->pos.y, self->b->pos.x, self->b->pos.y, WHITE);
 }
 
 int main() {
@@ -55,7 +55,7 @@ int main() {
 }
 
 Particle particles[] = { new_particle(screen_width / 2.0f, particle_radius), new_particle(screen_width / 2.0f, 200) };
-Spring springs[] = {new_spring(default_k_value, default_rest_length, particles[0], particles[1])};
+Spring springs[] = { new_spring(default_k_value, default_rest_length, &particles[0], &particles[1]) };
 
 void loop() {
     BeginDrawing();
