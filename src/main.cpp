@@ -1,21 +1,25 @@
 #include <cmath>
 #include <cstdio>
+#include <cstdlib>
+#include <ctime>
 #include <raylib.h>
 
 const int screen_width = 800;
 const int screen_height = 800;
 const int target_fps = 60;
 
-const float gravity_force = 1;
-const float default_k_value = 0.01;
+const float gravity_force = 0.3;
+const float default_k_value = 0.05f;
 const float default_rest_length = 200;
 
 const float particle_radius = 20;
+int particle_hue = 0;
 
 void loop();
 
 struct Particle {
     Vector2 pos, spd, acc;
+    Color color;
     bool fixed;
     float mass;
 };
@@ -26,10 +30,12 @@ struct Spring {
 };
 
 Particle new_particle(float x, float y, bool fixed = false) {
+    particle_hue = (particle_hue + 30) % 360;
     return Particle {
         .pos = Vector2 { x, y },
         .spd = Vector2 { 0, 0 },
         .acc = Vector2 { 0, 0 },
+        .color = ColorFromHSV(particle_hue, 0.8, 1.0),
         .fixed = fixed,
         .mass = 1
     };
@@ -40,7 +46,7 @@ Spring new_spring(float k, float rest_length, Particle* a, Particle* b) {
 }
 
 void render_particle(Particle* self) {
-    DrawCircle(self->pos.x, self->pos.y, particle_radius, BLUE);
+    DrawCircle(self->pos.x, self->pos.y, particle_radius, self->color);
 }
 
 void render_spring(Spring* self) {
@@ -57,6 +63,7 @@ void apply_force(Particle* self, Vector2 force) {
 
 void update_particle(Particle* self, float delta_time) {
     if (self->fixed) return;
+    apply_force(self, Vector2 { 0, gravity_force });
     // slow down
     self->spd.x *= 0.99;
     self->spd.y *= 0.99;
@@ -104,13 +111,37 @@ int main() {
     return 0;
 }
 
-Particle particles[] = { new_particle(screen_width / 2.0f, particle_radius), new_particle(screen_width / 2.0f, 500) };
-Spring springs[] = { new_spring(default_k_value, default_rest_length, &particles[0], &particles[1]) };
+Particle particles[] = { new_particle(screen_width / 2.0f, particle_radius, true), new_particle(screen_width / 2.0f, default_rest_length), new_particle(100, 100) };
+Spring springs[] = { new_spring(default_k_value, default_rest_length, &particles[0], &particles[1]), new_spring(default_k_value, default_rest_length, &particles[1], &particles[2]), 
+    new_spring(default_k_value, default_rest_length, &particles[2], &particles[0])};
 
+Particle* selected_particle = nullptr;
 void loop() {
     // Update Spring and particles
     for (auto& spring : springs) update_spring(&spring);
     for (auto& particle : particles) update_particle(&particle, pow(0.99, GetFrameTime()));
+
+    if (IsMouseButtonDown(MOUSE_LEFT_BUTTON)) {
+        // Change position of particle that mouse clicked
+        for (auto& p : particles) {
+            float delta_x = p.pos.x - GetMouseX();
+            float delta_y = p.pos.y - GetMouseY();
+            float distance_from_mouse = sqrt(delta_x * delta_x + delta_y * delta_y);
+
+            // Selected particle
+            if (distance_from_mouse <= particle_radius)
+                selected_particle = &p;
+        }
+    } else {
+        selected_particle = nullptr;
+    }
+
+    // Change particle position and stop
+    if (selected_particle != nullptr) {
+        selected_particle->pos.x = GetMouseX();
+        selected_particle->pos.y = GetMouseY();
+        selected_particle->spd = { 0, 0 };
+    }
 
     BeginDrawing();
     ClearBackground(BLACK);
