@@ -13,7 +13,7 @@ const float default_k_value = 0.05f;
 const float default_rest_length = 200;
 
 const float particle_radius = 20;
-int particle_hue = 0;
+int particle_hue = -30;
 
 void loop();
 
@@ -35,7 +35,7 @@ Particle new_particle(float x, float y, bool fixed = false) {
         .pos = Vector2 { x, y },
         .spd = Vector2 { 0, 0 },
         .acc = Vector2 { 0, 0 },
-        .color = ColorFromHSV(particle_hue, 0.8, 1.0),
+        .color = ColorFromHSV(particle_hue++, 0.8, 1.0),
         .fixed = fixed,
         .mass = 1
     };
@@ -111,9 +111,17 @@ int main() {
     return 0;
 }
 
-Particle particles[] = { new_particle(screen_width / 2.0f, particle_radius, true), new_particle(screen_width / 2.0f, default_rest_length), new_particle(100, 100) };
-Spring springs[] = { new_spring(default_k_value, default_rest_length, &particles[0], &particles[1]), new_spring(default_k_value, default_rest_length, &particles[1], &particles[2]), 
-    new_spring(default_k_value, default_rest_length, &particles[2], &particles[0])};
+Particle particles[] = {
+    new_particle(screen_width / 2.0f, particle_radius, true),
+    new_particle(screen_width / 2.0f, default_rest_length),
+    new_particle(100, 100)
+};
+
+Spring springs[] = {
+    new_spring(default_k_value, default_rest_length, &particles[0], &particles[1]),
+    new_spring(default_k_value, default_rest_length, &particles[1], &particles[2]),
+    new_spring(default_k_value, default_rest_length, &particles[2], &particles[0])
+};
 
 Particle* selected_particle = nullptr;
 void loop() {
@@ -141,6 +149,9 @@ void loop() {
         selected_particle->pos.x = GetMouseX();
         selected_particle->pos.y = GetMouseY();
         selected_particle->spd = { 0, 0 };
+
+        // Fixes and unfixes particle
+        if (GetCharPressed() == 'f') selected_particle->fixed ^= true;
     }
 
     BeginDrawing();
