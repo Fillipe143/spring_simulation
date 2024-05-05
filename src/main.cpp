@@ -9,7 +9,7 @@ const int screen_height = 800;
 const int target_fps = 60;
 
 const float gravity_force = 0.3;
-const float default_k_value = 0.05f;
+const float default_k_value = 0.3f;
 const float default_rest_length = 200;
 
 const float particle_radius = 20;
@@ -112,15 +112,29 @@ int main() {
 }
 
 Particle particles[] = {
-    new_particle(screen_width / 2.0f, particle_radius, true),
-    new_particle(screen_width / 2.0f, default_rest_length),
-    new_particle(100, 100)
+    new_particle(screen_width / 2.0f, screen_height / 2.0f - 173.2f / 2.0f, true),
+    new_particle(screen_width / 2.0f - 173.2f / 2.0f, screen_height / 2.0f + 173.2f / 2.0f, false),
+    new_particle(screen_width / 2.0f + 173.2f / 2.0f, screen_height / 2.0f + 173.2f / 2.0f, false),
+
+    // Square particles
+    //new_particle(screen_width/2.0f - default_rest_length /2.0f, screen_height/2.0f - default_rest_length/2.0f, true),
+    //new_particle(screen_width/2.0f + default_rest_length /2.0f, screen_height/2.0f - default_rest_length/2.0f, true),
+    //new_particle(screen_width/2.0f - default_rest_length /2.0f, screen_height/2.0f + default_rest_length/2.0f),
+    //new_particle(screen_width/2.0f + default_rest_length /2.0f, screen_height/2.0f + default_rest_length/2.0f),
 };
 
 Spring springs[] = {
     new_spring(default_k_value, default_rest_length, &particles[0], &particles[1]),
     new_spring(default_k_value, default_rest_length, &particles[1], &particles[2]),
-    new_spring(default_k_value, default_rest_length, &particles[2], &particles[0])
+    new_spring(default_k_value, default_rest_length, &particles[2], &particles[0]),
+
+    // Square springs
+    //new_spring(default_k_value, default_rest_length, &particles[0], &particles[1]),
+    //new_spring(default_k_value, default_rest_length, &particles[1], &particles[2]),
+    //new_spring(default_k_value, default_rest_length, &particles[2], &particles[3]),
+    //new_spring(default_k_value, default_rest_length, &particles[3], &particles[0]),
+    //new_spring(default_k_value, sqrtf(2.0f) * default_rest_length, &particles[0], &particles[2]),
+    //new_spring(default_k_value, sqrtf(2.0f) * default_rest_length, &particles[1], &particles[3]),
 };
 
 Particle* selected_particle = nullptr;
